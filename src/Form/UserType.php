@@ -14,7 +14,9 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -40,15 +42,18 @@ class UserType extends AbstractType
         // $builder->add('title', null, ['required' => false, ...]);
 
         $builder
-            ->add('username', TextType::class, [
+            ->add('name', TextType::class, [
                 'label' => 'label.username',
                 'disabled' => true,
             ])
-            ->add('fullName', TextType::class, [
+            ->add('displayName', TextType::class, [
                 'label' => 'label.fullname',
             ])
-            ->add('email', EmailType::class, [
-                'label' => 'label.email',
+            ->add('test', MoneyType::class, [
+                'mapped' => false,
+            ])
+            ->add('test2', UrlType::class, [
+                'mapped' => false,
             ])
         ;
     }

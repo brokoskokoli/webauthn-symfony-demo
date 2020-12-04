@@ -55,6 +55,8 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string $query
+     * @param int $limit
      * @return Post[]
      */
     public function findBySearchQuery(string $query, int $limit = Post::NUM_ITEMS): array

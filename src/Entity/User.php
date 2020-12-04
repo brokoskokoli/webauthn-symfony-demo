@@ -1,188 +1,83 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
+use Webauthn\PublicKeyCredentialUserEntity;
 
 /**
+ * @ORM\Table(name="users")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ORM\Table(name="symfony_demo_user")
- *
- * Defines the properties of the User entity to represent the application users.
- * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
- *
- * Tip: if you have an existing database, you can generate these entity class automatically.
- * See https://symfony.com/doc/current/doctrine/reverse_engineering.html
- *
- * @author Ryan Weaver <weaverryan@gmail.com>
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
+ * @UniqueEntity("name")
  */
-class User implements UserInterface, \Serializable
+class User extends PublicKeyCredentialUserEntity implements UserInterface
 {
     /**
-     * @var int
-     *
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", length=255)
      */
-    private $id;
+    protected $id;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank()
-     */
-    private $fullName;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", unique=true)
-     * @Assert\NotBlank()
-     * @Assert\Length(min=2, max=50)
-     */
-    private $username;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", unique=true)
-     * @Assert\Email()
-     */
-    private $email;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     */
-    private $password;
-
-    /**
-     * @var array
-     *
      * @ORM\Column(type="json")
      */
-    private $roles = [];
+    protected $roles;
 
-    public function getId(): ?int
+    public function __construct(string $id, string $name, string $displayName, ?string $icon = null, array $roles = [])
     {
-        return $this->id;
+        parent::__construct($name, $id, $displayName, $icon);
+        $this->roles = $roles;
     }
 
-    public function setFullName(string $fullName): void
+    public function getRoles(): array
     {
-        $this->fullName = $fullName;
+        return array_unique($this->roles + ['ROLE_USER']);
     }
 
-    public function getFullName(): ?string
+    public function getPassword(): void
     {
-        return $this->fullName;
+    }
+
+    public function getSalt(): void
+    {
     }
 
     public function getUsername(): ?string
     {
-        return $this->username;
+        return $this->name;
     }
 
-    public function setUsername(string $username): void
-    {
-        $this->username = $username;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): void
-    {
-        $this->email = $email;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): void
-    {
-        $this->password = $password;
-    }
-
-    /**
-     * Returns the roles or permissions granted to the user for security.
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-
-        // guarantees that a user always has at least one role for security
-        if (empty($roles)) {
-            $roles[] = 'ROLE_USER';
-        }
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): void
-    {
-        $this->roles = $roles;
-    }
-
-    /**
-     * Returns the salt that was originally used to encode the password.
-     *
-     * {@inheritdoc}
-     */
-    public function getSalt(): ?string
-    {
-        // We're using bcrypt in security.yaml to encode the password, so
-        // the salt value is built-in and and you don't have to generate one
-        // See https://en.wikipedia.org/wiki/Bcrypt
-
-        return null;
-    }
-
-    /**
-     * Removes sensitive data from the user.
-     *
-     * {@inheritdoc}
-     */
     public function eraseCredentials(): void
     {
-        // if you had a plainPassword property, you'd nullify it here
-        // $this->plainPassword = null;
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $name
      */
-    public function serialize(): string
+    public function setName(string $name): void
     {
-        // add $this->salt too if you don't use Bcrypt or Argon2i
-        return serialize([$this->id, $this->username, $this->password]);
+        $this->name = $name;
     }
 
     /**
-     * {@inheritdoc}
+     * @param string|null $icon
      */
-    public function unserialize($serialized): void
+    public function setIcon(?string $icon): void
     {
-        // add $this->salt too if you don't use Bcrypt or Argon2i
-        [$this->id, $this->username, $this->password] = unserialize($serialized, ['allowed_classes' => false]);
+        $this->icon = $icon;
     }
+
+    /**
+     * @param string $displayName
+     */
+    public function setDisplayName(string $displayName): void
+    {
+        $this->displayName = $displayName;
+    }
+
+
 }

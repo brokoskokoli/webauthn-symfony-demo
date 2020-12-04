@@ -1,34 +1,54 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace App\Repository;
 
 use App\Entity\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
+use Webauthn\Bundle\Repository\AbstractPublicKeyCredentialUserEntityRepository;
+use Webauthn\PublicKeyCredentialUserEntity;
 
-/**
- * This custom Doctrine repository is empty because so far we don't need any custom
- * method to query for application user information. But it's always a good practice
- * to define a custom repository that will be used when the application grows.
- *
- * See https://symfony.com/doc/current/doctrine.html#querying-for-objects-the-repository
- *
- * @author Ryan Weaver <weaverryan@gmail.com>
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
- */
-class UserRepository extends ServiceEntityRepository
+final class UserRepository extends AbstractPublicKeyCredentialUserEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
+    }
+
+    public function createUserEntity(string $username, string $displayName, ?string $icon): PublicKeyCredentialUserEntity
+    {
+        $id = Uuid::uuid4()->toString();
+
+        return new User($id, $username, $displayName, $icon, []);
+    }
+
+    public function saveUserEntity(PublicKeyCredentialUserEntity $userEntity): void
+    {
+        if (!$userEntity instanceof User) {
+            $userEntity =  new User(
+                $userEntity->getId(),
+                $userEntity->getName(),
+                $userEntity->getDisplayName(),
+                $userEntity->getId()
+            );
+        }
+
+        parent::saveUserEntity($userEntity);
+    }
+
+    public function find(string $username): ?User
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        return $qb->select('u')
+            ->from(User::class, 'u')
+            ->where('u.name = :name')
+            ->setParameter(':name', $username)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
     }
 }

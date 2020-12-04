@@ -47,7 +47,7 @@
                                         </a>
                                     </li>
 
-                                    {% if is_granted('ROLE_ADMIN') %}
+                                    {% if is_granted('IS_USER_PRESENT') %}
                                         <li>
                                             <a href="{{ path('admin_post_index') }}">
                                                 <i class="fa fa-lock" aria-hidden="true"></i> {{ 'menu.admin'|trans }}
@@ -65,7 +65,7 @@
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" id="user">
                                             <i class="fa fa-user" aria-hidden="true"></i>
                                             <span class="caret"></span>
-                                            <span class="sr-only">{{ app.user.fullname }}</span>
+                                            <span class="sr-only">{{ app.user.displayname }}</span>
                                         </a>
                                         <ul class="dropdown-menu user" role="menu" aria-labelledby="user">
                                             <li>
